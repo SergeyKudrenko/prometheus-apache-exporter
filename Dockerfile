@@ -7,6 +7,7 @@ COPY src/prometheus-apache-exporter/*.py /prometheus-apache-exporter/
 
 WORKDIR /prometheus-apache-exporter
 
+RUN apk add --no-cache py-lxml
 RUN pip install -r requirements.txt
 
 EXPOSE 9345/tcp
