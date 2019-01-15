@@ -1,7 +1,7 @@
 FROM python:3.6-alpine
 
 # install lxml dependencies
-RUN apk add --no-cache g++ gcc libxml2 libxslt
+RUN apk add --no-cache g++ gcc libxml2-dev libxslt-dev
 
 # copy python code
 RUN mkdir -p /prometheus-apache-exporter
