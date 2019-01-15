@@ -17,4 +17,13 @@ Provides information about current workers, status of requests balancing within 
 ### Endpoints
 * /healthz/up - liveness probe url
 * /healthz/ready - readiness probe url
-* /metics - apache metrics
+* /metrics - apache metrics
+
+### Run
+```bash
+docker run -it \
+-p 9345:9345 \
+-e APACHE_EXPORTER_URL='https://some-host.com/server-status' \
+-e APACHE_EXPORTER_CLUSTERS='{"cluster1":"/html/body/table[5]/tr"}' \
+--name apache-exporter sergeykudrenko/prometheus-apache-exporter:latest
+```
