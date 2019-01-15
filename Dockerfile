@@ -1,7 +1,8 @@
-FROM python:3.6-alpine
+FROM python:3.6
 
-# install lxml
-RUN apk add --no-cache libxml2 libxslt libxml2-dev libxslt-dev python-dev py-lxml py3-lxml
+# install lxml dependencies
+#RUN apk add --no-cache libxml2 libxslt libxml2-dev libxslt-dev python-dev py-lxml py3-lxml
+RUN apt install libxml2 libxslt
 
 # copy python code
 RUN mkdir -p /prometheus-apache-exporter
