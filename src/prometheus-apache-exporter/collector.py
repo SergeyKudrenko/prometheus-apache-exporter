@@ -2,7 +2,7 @@ import os
 import json
 import requests
 import tornado.web
-from lxml import html, etree
+from lxml import html
 from prometheus_client import generate_latest
 from prometheus_client.core import REGISTRY, GaugeMetricFamily, CounterMetricFamily
 
