@@ -1,5 +1,7 @@
 import os
+import time
 import json
+import logging
 import requests
 import tornado.web
 from lxml import html
@@ -8,13 +10,21 @@ from prometheus_client.core import REGISTRY, GaugeMetricFamily, CounterMetricFam
 
 class MetricHandler(tornado.web.RequestHandler):
     """ Tornado Handler for /metrics endpoint """
+    def __init__(self, application, request, **kwargs):
+        super().__init__(application, request, **kwargs)
+        self.logger = logging.getLogger(type(self).__name__)
+        self.logger.setLevel(logging.DEBUG)
+
     def initialize(self, ref_object):
         self.obj = ref_object
 
     def get(self):
+        start = time.clock()
         self.obj.collect()
         value = self.obj.generate_latest_scrape()
         self.write(value)
+        end = time.clock()
+        self.logger.info("Scraped in %.2gs" % (end-start))        
 
     def on_finish(self):
         self.obj = None
@@ -36,7 +46,14 @@ class Collector(object):
           Gauge: apache_scoreboard_current - Count of workers grouped by status
     """
     def __init__(self):
-        self.url = os.environ['APACHE_EXPORTER_URL']
+
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        self.logger = logging.getLogger(type(self).__name__)
+        try:
+            self.url = os.environ['APACHE_EXPORTER_URL']
+        except Exception as e:
+            self.logger.error("ENV variable APACHE_EXPORTER_URL is not set. Exception: %s" % e)
 
     def generate_latest_scrape(self):
         """ Return a content of Prometheus registry """
@@ -50,7 +67,8 @@ class Collector(object):
                 return 1
             else:
                 return 0
-        except:
+        except Exception as e:
+            self.logger.error("Cannot ping Apache status page. Exception: %s" % e)
             return 0
 
     def collect(self):
@@ -73,8 +91,16 @@ class Collector(object):
         scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status', 
                                        labels=['status'])
 
-        page = requests.get(self.url, verify=False)       
-        root = html.fromstring(page.content)
+        try:
+            page = requests.get(self.url, verify=False)
+            page.raise_for_status()
+        except Exception as e:
+            self.logger.error("Cannot load Apache status page. Exception: %s" % e)            
+        
+        try:
+            root = html.fromstring(page.content)
+        except Exception as e:
+            self.logger.error("Cannot parse status page as html. Exception: %s" % e)                        
 
         # Get workers statuses
         workers_map = {}
@@ -91,7 +117,8 @@ class Collector(object):
         # Get balancing and routes status
         try:
             cluster_xpaths = json.loads(os.environ['APACHE_EXPORTER_CLUSTERS'])
-        except:
+        except Exception as e:
+            self.logger.error("Cannot load ENV variable APACHE_EXPORTER_CLUSTERS. Exception: %s" % e)
             cluster_xpaths = None
 
         for cluster in cluster_xpaths:
