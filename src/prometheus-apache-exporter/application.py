@@ -1,4 +1,3 @@
-import os
 import tornado.web
 import tornado.ioloop
 from collector import Collector, MetricHandler
