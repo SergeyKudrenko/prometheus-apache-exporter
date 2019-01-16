@@ -1,5 +1,5 @@
 ### Apache exporter 
-Provides information about current workers, status of requests balancing within preconfigured clusters 
+Exporter scrapes Apache /server-status for worker status and  route balancing statistics
  
 ### Exporter is configured via environment variables:
 * APACHE_EXPORTER_URL - Apache /server-status url. Example: "https://some-host.com/server-status"
@@ -7,16 +7,17 @@ Provides information about current workers, status of requests balancing within 
 
 ### Metrics:
 * Counter: apache_balancer_acc_total - Total requests count
-* Counter: apache_balancer_wr_total - Total bytes written
-* Counter: apache_balancer_rd_total - Total bytes read
-* Gauge: apache_balancer_route_ok - Ok status of the route
-* Gauge: apache_balancer_route_dis - Dis status of the route
-* Gauge: apache_balancer_route_err - Err status of the route
+* Counter: apache_balancer_wr_total  - Total bytes written
+* Counter: apache_balancer_rd_total  - Total bytes read
+* Gauge: apache_balancer_route_ok  - Balancing status of the route is OK
+* Gauge: apache_balancer_route_dis - Balancing status of the route is DISABLED
+* Gauge: apache_balancer_route_err - Balancing status of the route is ERROR
+* Gauge: apache_balancer_route_unk - Balancing status of the route is UNKNOWN
 * Gauge: apache_scoreboard_current - Count of workers grouped by status
 
 ### Endpoints
-* /healthz/up - liveness probe url
-* /healthz/ready - readiness probe url
+* /healthz/up - liveness probe
+* /healthz/ready - readiness probe
 * /metrics - apache metrics
 
 ### Run
