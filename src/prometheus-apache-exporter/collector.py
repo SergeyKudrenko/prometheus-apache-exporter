@@ -46,7 +46,7 @@ class Collector(object):
         """ Check Apache availability """
         try:
             ping = requests.get(self.url, verify=False)
-            if ping.status_code == requests.codes.Ok:
+            if ping.status_code == requests.codes.ok:
                 return 1
             else:
                 return 0
@@ -73,7 +73,7 @@ class Collector(object):
         scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status', 
                                        labels=['status'])
 
-        page = requests.get(self.url, verify=False )       
+        page = requests.get(self.url, verify=False)       
         root = html.fromstring(page.content)
 
         # Get workers statuses
