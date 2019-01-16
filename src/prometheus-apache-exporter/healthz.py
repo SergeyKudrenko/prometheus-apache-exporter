@@ -1,6 +1,6 @@
 import tornado.web
 
-class livenessProbeHandler(tornado.web.RequestHandler):
+class LivenessProbeHandler(tornado.web.RequestHandler):
     """ Tornado Handler for /healthz/up endpoint """
     def initialize(self):
         pass
@@ -11,7 +11,7 @@ class livenessProbeHandler(tornado.web.RequestHandler):
     def on_finish(self):
         pass
 
-class readinessProbeHandler(tornado.web.RequestHandler):
+class ReadinessProbeHandler(tornado.web.RequestHandler):
     """ Tornado Handler for /healthz/ready endpoint """
     def initialize(self,ref_object):
         self.obj = ref_object

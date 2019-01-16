@@ -1,18 +1,18 @@
-import os
 import tornado.web
-import tornado.escape
 import tornado.ioloop
-from exporter import exporter 
-from handlers import metricHandler
-from healthz import livenessProbeHandler, readinessProbeHandler
+from collector import Collector, MetricHandler
+from healthz import LivenessProbeHandler, ReadinessProbeHandler
+from prometheus_client.core import REGISTRY
+
+REGISTRY.register(Collector())
 
 if __name__ == '__main__':
-    exporter = exporter(os.environ['APACHE_EXPORTER_URL'])
+    exporter = Collector()
 
     application = tornado.web.Application([
-                    (r"/healthz/up", livenessProbeHandler),
-                    (r"/healthz/ready", readinessProbeHandler, {"ref_object": exporter}),
-                    (r"/metrics", metricHandler, {"ref_object": exporter})])
+                    (r"/healthz/up", LivenessProbeHandler),
+                    (r"/healthz/ready", ReadinessProbeHandler, {"ref_object": exporter}),
+                    (r"/metrics", MetricHandler, {"ref_object": exporter})])
 
     application.listen(9345)
     tornado.ioloop.IOLoop.instance().start()
