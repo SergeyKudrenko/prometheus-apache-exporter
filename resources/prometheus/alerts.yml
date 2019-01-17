@@ -1,0 +1,37 @@
+- name: apache-rules
+  rules:
+  ### Health ###
+  - alert: apache_node_down
+    expr: apache_balancer_route_error==1 or apache_balancer_route_unknown==1
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      description: "Apache {{ $labels.exporter_name }} node {{ $labels.host }} / {{ $labels.route }} is down for 5+ minute."
+  ##  
+  - alert: apache_node_disabled
+    expr: apache_balancer_route_disabled==1
+    for: 1h
+    labels:
+      severity: critical
+    annotations:
+      description: "Apache {{ $labels.exporter_name }} node {{ $labels.host }} / {{ $labels.route }} is disabled for 1+ hour."
+  ##  
+  ### Utilization ###
+  - alert: apache_workers_scarcity
+    expr: >
+      sum(apache_scoreboard_current{status="Waiting for Connection"}) by (exporter_name) 
+      / ON (exporter_name) sum(apache_scoreboard_current) by (exporter_name) * 100 < 1
+    for: 20m
+    labels:
+      severity: critical
+    annotations:
+      description: "Apache: {{ $labels.exporter_name }} has less than 1% of idle workers"
+  ### Balancing ###
+  - alert: apache_cluster_disbalanced
+    expr: stddev(sum(increase(apache_balancer_requests_total[30m])) by (exporter_name, cluster, route)) by (exporter_name, cluster) > 500
+    for: 30m
+    labels:
+      severity: critical      
+    annotations:
+      description: "Apache {{ $labels.exporter_name }} cluster {{ $labels.cluster }} has a severe problem with requests balancing."
