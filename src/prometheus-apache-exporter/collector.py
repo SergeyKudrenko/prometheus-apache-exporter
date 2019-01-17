@@ -36,7 +36,7 @@ class Collector(object):
         logging.basicConfig(level=logging.INFO,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(type(self).__name__)
-        
+
         try:
             self.url = os.environ['APACHE_EXPORTER_URL']
         except Exception as e:
@@ -62,21 +62,25 @@ class Collector(object):
         """ Scrape /server-status url and collect metrics """      
         # Exposed metrics
         balancer_acc = CounterMetricFamily('apache_balancer_requests_total', 'Total requests count', 
-                                           labels=['cluster', 'host', 'route'])                                        
+                                           labels=['cluster', 'host', 'route', 'exporter_name'])                                        
         balancer_wr = CounterMetricFamily('apache_balancer_write_bytes_total', 'Total bytes written', 
-                                          labels=['cluster', 'host', 'route'])
+                                          labels=['cluster', 'host', 'route', 'exporter_name'])
         balancer_rd = CounterMetricFamily('apache_balancer_read_bytes_total', 'Total bytes read', 
-                                          labels=['cluster', 'host', 'route'])
+                                          labels=['cluster', 'host', 'route', 'exporter_name'])
         route_ok = GaugeMetricFamily('apache_balancer_route_ok', 'Balancing status of the route is OK', 
-                                     labels=['cluster', 'host', 'route'])
+                                     labels=['cluster', 'host', 'route', 'exporter_name'])
         route_dis = GaugeMetricFamily('apache_balancer_route_disabled', 'Balancing status of the route is DISABLED', 
-                                      labels=['cluster', 'host', 'route'])
+                                      labels=['cluster', 'host', 'route', 'exporter_name'])
         route_err = GaugeMetricFamily('apache_balancer_route_error', 'Balancing status of the route is ERROR', 
-                                      labels=['cluster', 'host', 'route'])
+                                      labels=['cluster', 'host', 'route', 'exporter_name'])
         route_unk = GaugeMetricFamily('apache_balancer_route_unknown', 'Balancing status of the route is UNKNOWN', 
-                                           labels=['cluster', 'host', 'route'])
+                                           labels=['cluster', 'host', 'route', 'exporter_name'])
         scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status', 
-                                       labels=['status'])
+                                       labels=['status', 'exporter_name'])
+        try:
+            exporter_name = os.environ['APACHE_EXPORTER_NAME']
+        except:
+            exporter_name = 'none'
 
         try:
             page = requests.get(self.url, verify=False)
@@ -124,7 +128,7 @@ class Collector(object):
             else:
                 status = "Unknown"
             if worker_status != "\n":
-                scoreboard.add_metric([status], int(workers_map[worker_status]))
+                scoreboard.add_metric([status, exporter_name], int(workers_map[worker_status]))
 
         # Get balancing and routes status
         try:
@@ -140,8 +144,8 @@ class Collector(object):
                     h += 1
                     continue
                 else:                    
-                    host = row[1].text
-                    route = row[3].text
+                    host = "%s" % row[1].text
+                    route = "%s" % row[3].text
                     status = row[2].text
                     acc = row[7].text
                     wr = row[8].text
@@ -172,14 +176,14 @@ class Collector(object):
                     err = 1
                 else:
                     unk = 1
-                route_ok.add_metric([cluster,host,route], ok)
-                route_dis.add_metric([cluster,host,route], dis)
-                route_err.add_metric([cluster,host,route], err)
-                route_unk.add_metric([cluster,host,route], unk)
+                route_ok.add_metric([cluster,host,route,exporter_name], ok)
+                route_dis.add_metric([cluster,host,route,exporter_name], dis)
+                route_err.add_metric([cluster,host,route,exporter_name], err)
+                route_unk.add_metric([cluster,host,route,exporter_name], unk)
                 # Update requests, wr, rd counters
-                balancer_acc.add_metric([cluster,host,route], int(acc))
-                balancer_wr.add_metric([cluster,host,route], int(wr))
-                balancer_rd.add_metric([cluster,host,route], int(rd))
+                balancer_acc.add_metric([cluster,host,route,exporter_name], int(acc))
+                balancer_wr.add_metric([cluster,host,route,exporter_name], int(wr))
+                balancer_rd.add_metric([cluster,host,route,exporter_name], int(rd))
        
         yield scoreboard
         yield balancer_acc
