@@ -30,26 +30,13 @@ class MetricHandler(tornado.web.RequestHandler):
         self.obj = None
 
 class Collector(object):
-    """ Apache exporter. Provides information about current workers, status of requests balancing within preconfigured clusters 
-        Exporter is configured via environment variables:
-          APACHE_EXPORTER_URL - Apache /server-status url. Example: "https://some-host.com/server-status"
-          APACHE_EXPORTER_CLUSTERS - Hash (JSON) Clusters and XPath to <TR> element. Example: '{"cluster1": "/html/body/table[5]/tr"}'
-        
-        Metrics:
-          Counter: apache_balancer_acc_total - Total requests count
-          Counter: apache_balancer_wr_total - Total bytes written
-          Counter: apache_balancer_rd_total - Total bytes read
-          Gauge: apache_balancer_route_ok - Balancing status of the route is OK
-          Gauge: apache_balancer_route_dis - Balancing status of the route is DISABLED
-          Gauge: apache_balancer_route_err - Balancing status of the route is ERROR
-          Gauge: apache_balancer_route_unk - Balancing status of the route is UNKNOWN          
-          Gauge: apache_scoreboard_current - Count of workers grouped by status
-    """
+    """ Apache exporter. 
+    Provides information about current workers, status of requests balancing within preconfigured clusters """
     def __init__(self):
-
         logging.basicConfig(level=logging.INFO,
                             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         self.logger = logging.getLogger(type(self).__name__)
+        
         try:
             self.url = os.environ['APACHE_EXPORTER_URL']
         except Exception as e:
@@ -74,19 +61,19 @@ class Collector(object):
     def collect(self):
         """ Scrape /server-status url and collect metrics """      
         # Exposed metrics
-        balancer_acc = CounterMetricFamily('apache_balancer_acc_total', 'Total requests count', 
+        balancer_acc = CounterMetricFamily('apache_balancer_requests_total', 'Total requests count', 
                                            labels=['cluster', 'host', 'route'])                                        
-        balancer_wr = CounterMetricFamily('apache_balancer_wr_total', 'Total bytes written', 
+        balancer_wr = CounterMetricFamily('apache_balancer_write_bytes_total', 'Total bytes written', 
                                           labels=['cluster', 'host', 'route'])
-        balancer_rd = CounterMetricFamily('apache_balancer_rd_total', 'Total bytes read', 
+        balancer_rd = CounterMetricFamily('apache_balancer_read_bytes_total', 'Total bytes read', 
                                           labels=['cluster', 'host', 'route'])
         route_ok = GaugeMetricFamily('apache_balancer_route_ok', 'Balancing status of the route is OK', 
                                      labels=['cluster', 'host', 'route'])
-        route_dis = GaugeMetricFamily('apache_balancer_route_dis', 'Balancing status of the route is DISABLED', 
+        route_dis = GaugeMetricFamily('apache_balancer_route_disabled', 'Balancing status of the route is DISABLED', 
                                       labels=['cluster', 'host', 'route'])
-        route_err = GaugeMetricFamily('apache_balancer_route_err', 'Balancing status of the route is ERROR', 
+        route_err = GaugeMetricFamily('apache_balancer_route_error', 'Balancing status of the route is ERROR', 
                                       labels=['cluster', 'host', 'route'])
-        route_unk = GaugeMetricFamily('apache_balancer_route_unk', 'Balancing status of the route is UNKNOWN', 
+        route_unk = GaugeMetricFamily('apache_balancer_route_unknown', 'Balancing status of the route is UNKNOWN', 
                                            labels=['cluster', 'host', 'route'])
         scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status', 
                                        labels=['status'])
@@ -112,7 +99,32 @@ class Collector(object):
                 workers_map[workers[symbol]] = 1            
         # Update metrics 
         for worker_status in workers_map:
-            scoreboard.add_metric([worker_status], int(workers_map[worker_status]))
+            if worker_status == ".":
+                status = "Open slot"
+            elif worker_status == "_":
+                status = "Waiting for Connection"
+            elif worker_status == "S":
+                status = "Starting up"
+            elif worker_status == "R":
+                status = "Reading Request"
+            elif worker_status == "W":
+                status = "Sending Reply"
+            elif worker_status == "K":
+                status = "Keepalive"
+            elif worker_status == "D":
+                status = "DNS Lookup"
+            elif worker_status == "C":
+                status = "Closing connection"
+            elif worker_status == "L":
+                status = "Logging"
+            elif worker_status == "G":
+                status = "Gracefully finishing"
+            elif worker_status == "I":
+                status = "Idle cleanup of worker"                                
+            else:
+                status = "Unknown"
+            if worker_status != "\n":
+                scoreboard.add_metric([status], int(workers_map[worker_status]))
 
         # Get balancing and routes status
         try:
@@ -132,8 +144,23 @@ class Collector(object):
                     route = row[3].text
                     status = row[2].text
                     acc = row[7].text
-                    wr = row[8].text.replace('K','000').replace('M','000000').replace('G','000000000').replace('.','').strip()
-                    rd =  row[9].text.replace('K','000').replace('M','000000').replace('G','000000000').replace('.','').strip()
+                    wr = row[8].text
+                    rd =  row[9].text
+
+                # Convert to bytes
+                if wr.find('K') > 0:
+                    wr = float(wr.replace('K','')) * 2**10
+                elif wr.find('M') > 0:
+                    wr = float(wr.replace('M','')) * 2**20
+                elif wr.find('G') > 0:
+                    wr = float(wr.replace('G','')) * 2**30
+
+                if rd.find('K') > 0:
+                    rd = float(rd.replace('K','')) * 2**10
+                elif rd.find('M') > 0:
+                    rd = float(rd.replace('M','')) * 2**20
+                elif rd.find('G') > 0:
+                    rd = float(rd.replace('G','')) * 2**30
 
                 # Update nodes statuses
                 ok, dis, err, unk = 0, 0, 0, 0                
