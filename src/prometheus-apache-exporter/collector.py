@@ -1,4 +1,5 @@
 import os
+import re
 import time
 import json
 import logging
@@ -58,15 +59,51 @@ class Collector(object):
             self.logger.error("Cannot ping Apache status page. Exception: %s" % e)
             return 0
 
+    def str_to_bytes(self,
+                     str):
+        """ Converts string to bytes """
+        str = str.upper()
+        res = 0
+
+        pos = str.find('K')
+        if pos > 0:
+            res = float(str[0:pos].strip()) * 2**10
+            return res       
+        pos = str.find('M')
+        if pos > 0:
+            res = float(str[0:pos].strip()) * 2**20
+            return res
+        pos = str.find('G')
+        if pos > 0:
+            res = float(str[0:pos].strip()) * 2**30
+            return res
+        pos = str.find('B')
+        if pos > 0:
+            res = float(str[0:pos].strip())
+            return res
+
+        return res
+
     def collect(self):
         """ Scrape /server-status url and collect metrics """      
-        # Exposed metrics
+        # Counters
+        accesses_total = CounterMetricFamily('apache_accesses_total', 'Total requests served count since startup',
+                                             labels=['exporter_name'])                                     
+        traffic_total = CounterMetricFamily('apache_traffic_bytes_total', 'Total bytes transfered since startup', 
+                                            labels=['exporter_name'])
         balancer_acc = CounterMetricFamily('apache_balancer_requests_total', 'Total requests count', 
                                            labels=['cluster', 'host', 'route', 'exporter_name'])                                        
         balancer_wr = CounterMetricFamily('apache_balancer_write_bytes_total', 'Total bytes written', 
                                           labels=['cluster', 'host', 'route', 'exporter_name'])
         balancer_rd = CounterMetricFamily('apache_balancer_read_bytes_total', 'Total bytes read', 
-                                          labels=['cluster', 'host', 'route', 'exporter_name'])
+                                          labels=['cluster', 'host', 'route', 'exporter_name'])       
+        # Gauges
+        requests_sec = GaugeMetricFamily('apache_requests_per_second', 'Requests per second', 
+                                         labels=['exporter_name'])
+        bytes_sec = GaugeMetricFamily('apache_io_bytes_per_second', 'Bytes write/read per second', 
+                                         labels=['exporter_name'])
+        bytes_request = GaugeMetricFamily('apache_io_bytes_per_request', 'Bytes write/read  per request', 
+                                         labels=['exporter_name'])
         route_ok = GaugeMetricFamily('apache_balancer_route_ok', 'Balancing status of the route is OK', 
                                      labels=['cluster', 'host', 'route', 'exporter_name'])
         route_dis = GaugeMetricFamily('apache_balancer_route_disabled', 'Balancing status of the route is DISABLED', 
@@ -92,6 +129,36 @@ class Collector(object):
             root = html.fromstring(page.content)
         except Exception as e:
             self.logger.error("Cannot parse status page as html. Exception: %s" % e)                        
+
+        # Find total traffic and accesses, and requests,bytes per second/request
+        for x in range(1, 20):
+            tmp_str = root.xpath("/html/body/dl[2]/dt[%d]" % x)[0].text.strip()
+            if tmp_str.find('Total accesses:') >=0:
+                match = re.match('Total accesses: (.*) - Total Traffic: (.*)', tmp_str)
+                _accesses_total = match.group(1)
+                _traffic_total = self.str_to_bytes(match.group(2))
+                # Update metrics if they were found
+                if _accesses_total is not None:
+                    accesses_total.add_metric([exporter_name], _accesses_total)
+                if _traffic_total is not None:
+                    traffic_total.add_metric([exporter_name], _traffic_total)
+                break
+        
+        for x in range(1, 20):
+            tmp_str = root.xpath("/html/body/dl[2]/dt[%d]" % x)[0].text.strip()
+            if tmp_str.find('requests') >=0 and tmp_str.find('second') >=0:
+                match = re.match('(.*) requests/sec - (.*/second) - (.*/request)', tmp_str)
+                _requests_sec = match.group(1)
+                _bytes_sec = self.str_to_bytes(match.group(2))
+                _bytes_request = self.str_to_bytes(match.group(3))
+                # Update metrics if they were found
+                if _requests_sec is not None:
+                    requests_sec.add_metric([exporter_name], _requests_sec)
+                if _bytes_sec is not None:
+                    bytes_sec.add_metric([exporter_name], _bytes_sec)
+                if _bytes_request is not None:
+                    bytes_request.add_metric([exporter_name], _bytes_request)
+                break
 
         # Get workers statuses
         workers_map = {}
@@ -128,6 +195,7 @@ class Collector(object):
             else:
                 status = "Unknown"
             if worker_status != "\n":
+                #Update workers scoreboard
                 scoreboard.add_metric([status, exporter_name], int(workers_map[worker_status]))
 
         # Get balancing and routes status
@@ -148,34 +216,20 @@ class Collector(object):
                     route = "%s" % row[3].text
                     status = row[2].text
                     acc = row[7].text
-                    wr = row[8].text
-                    rd =  row[9].text
-
-                # Convert to bytes
-                if wr.find('K') > 0:
-                    wr = float(wr.replace('K','')) * 2**10
-                elif wr.find('M') > 0:
-                    wr = float(wr.replace('M','')) * 2**20
-                elif wr.find('G') > 0:
-                    wr = float(wr.replace('G','')) * 2**30
-
-                if rd.find('K') > 0:
-                    rd = float(rd.replace('K','')) * 2**10
-                elif rd.find('M') > 0:
-                    rd = float(rd.replace('M','')) * 2**20
-                elif rd.find('G') > 0:
-                    rd = float(rd.replace('G','')) * 2**30
+                    wr = self.str_to_bytes(row[8].text)
+                    rd =  self.str_to_bytes(row[9].text)
 
                 # Update nodes statuses
-                ok, dis, err, unk = 0, 0, 0, 0                
-                if status == "Ok":
+                ok, dis, err, unk = 0, 0, 0, 0
+                if status.find('Ok') >= 0:
                     ok = 1                    
-                elif status == "Dis":
+                elif status.find('Dis') >= 0:
                     dis = 1
-                elif status == "Err":
+                elif status.find('Err') >= 0:
                     err = 1
                 else:
                     unk = 1
+                # Route statuses
                 route_ok.add_metric([cluster,host,route,exporter_name], ok)
                 route_dis.add_metric([cluster,host,route,exporter_name], dis)
                 route_err.add_metric([cluster,host,route,exporter_name], err)
@@ -184,12 +238,18 @@ class Collector(object):
                 balancer_acc.add_metric([cluster,host,route,exporter_name], int(acc))
                 balancer_wr.add_metric([cluster,host,route,exporter_name], int(wr))
                 balancer_rd.add_metric([cluster,host,route,exporter_name], int(rd))
-       
-        yield scoreboard
+
+        yield accesses_total
+        yield traffic_total
         yield balancer_acc
-        yield balancer_wr        
-        yield balancer_rd                
+        yield balancer_wr
+        yield balancer_rd
+
+        yield requests_sec
+        yield bytes_sec
+        yield bytes_request
         yield route_ok
         yield route_dis
         yield route_err
         yield route_unk
+        yield scoreboard
