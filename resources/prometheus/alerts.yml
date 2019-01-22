@@ -17,6 +17,13 @@
     annotations:
       description: "Apache {{ $labels.exporter_name }} node {{ $labels.host }} / {{ $labels.route }} is disabled for 1+ hour."
   ##  
+  - alert: apache_node_unknown
+    expr: apache_balancer_route_unknown==1
+    for: 1h
+    labels:
+      severity: critical
+    annotations:
+      description: "Apache {{ $labels.exporter_name }} node {{ $labels.host }} / {{ $labels.route }} is unknown for 1+ hour."
   ### Utilization ###
   - alert: apache_workers_scarcity
     expr: >
@@ -29,7 +36,9 @@
       description: "Apache: {{ $labels.exporter_name }} has less than 1% of idle workers"
   ### Balancing ###
   - alert: apache_cluster_disbalanced
-    expr: stddev(sum(increase(apache_balancer_requests_total[30m])) by (exporter_name, cluster, route)) by (exporter_name, cluster) > 500
+    expr: >
+      stddev(sum(increase(apache_balancer_requests_total[30m])) by (exporter_name, cluster, route) AND 
+      ON (exporter_name, cluster, route) apache_balancer_route_disabled == 0) by (exporter_name, cluster) > 500
     for: 30m
     labels:
       severity: critical      
