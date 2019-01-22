@@ -33,6 +33,12 @@
       "id": "prometheus",
       "name": "Prometheus",
       "version": "5.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "singlestat",
+      "name": "Singlestat",
+      "version": "5.0.0"
     }
   ],
   "annotations": {
@@ -52,9 +58,492 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1547718229628,
+  "iteration": 1548133790574,
   "links": [],
   "panels": [
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PS-K8S}",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 21,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "avg(apache_accesses_total{exporter_name=\"$apache\"}) by (exporter_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Requests Total",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PS-K8S}",
+      "format": "bytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 4,
+        "y": 0
+      },
+      "id": 22,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "avg(apache_traffic_bytes_total{exporter_name=\"$apache\"}) by (exporter_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "IO Total",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PS-K8S}",
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 8,
+        "y": 0
+      },
+      "id": 23,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "avg(apache_requests_per_second{exporter_name=\"$apache\"}) by (exporter_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Requests Per Second",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PS-K8S}",
+      "decimals": 2,
+      "format": "Bps",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 12,
+        "y": 0
+      },
+      "id": 24,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "avg(apache_io_bytes_per_second{exporter_name=\"$apache\"}) by (exporter_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Bytes Per Second",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PS-K8S}",
+      "decimals": 2,
+      "format": "decbytes",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 16,
+        "y": 0
+      },
+      "id": 25,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "avg(apache_io_bytes_per_request{exporter_name=\"$apache\"}) by (exporter_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Bytes Per Request",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
+    {
+      "cacheTimeout": null,
+      "colorBackground": false,
+      "colorValue": false,
+      "colors": [
+        "#299c46",
+        "rgba(237, 129, 40, 0.89)",
+        "#d44a3a"
+      ],
+      "datasource": "${DS_PS-K8S}",
+      "decimals": 0,
+      "format": "none",
+      "gauge": {
+        "maxValue": 100,
+        "minValue": 0,
+        "show": false,
+        "thresholdLabels": false,
+        "thresholdMarkers": true
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 4,
+        "x": 20,
+        "y": 0
+      },
+      "id": 28,
+      "interval": null,
+      "links": [],
+      "mappingType": 1,
+      "mappingTypes": [
+        {
+          "name": "value to text",
+          "value": 1
+        },
+        {
+          "name": "range to text",
+          "value": 2
+        }
+      ],
+      "maxDataPoints": 100,
+      "nullPointMode": "connected",
+      "nullText": null,
+      "postfix": "",
+      "postfixFontSize": "50%",
+      "prefix": "",
+      "prefixFontSize": "50%",
+      "rangeMaps": [
+        {
+          "from": "null",
+          "text": "N/A",
+          "to": "null"
+        }
+      ],
+      "sparkline": {
+        "fillColor": "rgba(31, 118, 189, 0.18)",
+        "full": false,
+        "lineColor": "rgb(31, 120, 193)",
+        "show": false
+      },
+      "tableColumn": "",
+      "targets": [
+        {
+          "expr": "sum(apache_balancer_route_unknown{exporter_name=\"$apache\"})",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "refId": "A"
+        }
+      ],
+      "thresholds": "",
+      "title": "Nodes in UNKNOW status",
+      "type": "singlestat",
+      "valueFontSize": "80%",
+      "valueMaps": [
+        {
+          "op": "=",
+          "text": "N/A",
+          "value": "null"
+        }
+      ],
+      "valueName": "current"
+    },
     {
       "aliasColors": {},
       "bars": true,
@@ -63,10 +552,10 @@
       "datasource": "${DS_PS-K8S}",
       "fill": 1,
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 8,
         "x": 0,
-        "y": 0
+        "y": 2
       },
       "id": 13,
       "legend": {
@@ -158,10 +647,10 @@
       "datasource": "${DS_PS-K8S}",
       "fill": 1,
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 8,
         "x": 8,
-        "y": 0
+        "y": 2
       },
       "id": 14,
       "legend": {
@@ -251,10 +740,10 @@
       "datasource": "${DS_PS-K8S}",
       "fill": 1,
       "gridPos": {
-        "h": 4,
+        "h": 3,
         "w": 8,
         "x": 16,
-        "y": 0
+        "y": 2
       },
       "id": 15,
       "legend": {
@@ -285,7 +774,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "apache_balancer_route_error{exporter_name=\"$apache\", cluster=\"$cluster\"} OR apache_balancer_route_unknown{exporter_name=\"$apache\", cluster=\"$cluster\"}",
+          "expr": "apache_balancer_route_error{exporter_name=\"$apache\", cluster=\"$cluster\"}",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -347,10 +836,10 @@
       "fontSize": "100%",
       "format": "short",
       "gridPos": {
-        "h": 13,
+        "h": 10,
         "w": 8,
         "x": 0,
-        "y": 4
+        "y": 5
       },
       "id": 17,
       "interval": null,
@@ -374,7 +863,7 @@
           "refId": "A"
         }
       ],
-      "title": "Request served by nodes, 1h",
+      "title": "Requests Served By Node, 1h",
       "type": "grafana-piechart-panel",
       "valueName": "current"
     },
@@ -386,10 +875,10 @@
       "datasource": "${DS_PS-K8S}",
       "fill": 1,
       "gridPos": {
-        "h": 6,
-        "w": 16,
+        "h": 5,
+        "w": 8,
         "x": 8,
-        "y": 4
+        "y": 5
       },
       "id": 19,
       "legend": {
@@ -455,7 +944,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Workers by status",
+      "title": "Workers By Status",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -500,97 +989,10 @@
       "datasource": "${DS_PS-K8S}",
       "fill": 1,
       "gridPos": {
-        "h": 7,
-        "w": 16,
-        "x": 8,
-        "y": 10
-      },
-      "id": 3,
-      "legend": {
-        "alignAsTable": true,
-        "avg": false,
-        "current": true,
-        "max": false,
-        "min": false,
-        "rightSide": true,
-        "show": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null",
-      "percentage": true,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": true,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(increase(apache_balancer_requests_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[1m])) by (host, route)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{host}} / {{route}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Requests served by node %, 1m",
-      "tooltip": {
-        "shared": true,
-        "sort": 0,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": "100",
-          "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PS-K8S}",
-      "fill": 1,
-      "gridPos": {
-        "h": 7,
+        "h": 5,
         "w": 8,
-        "x": 0,
-        "y": 17
+        "x": 16,
+        "y": 5
       },
       "id": 2,
       "legend": {
@@ -609,7 +1011,7 @@
       "lines": true,
       "linewidth": 1,
       "links": [],
-      "nullPointMode": "null",
+      "nullPointMode": "null as zero",
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -674,13 +1076,101 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PS-K8S}",
+      "fill": 1,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 8,
+        "y": 10
+      },
+      "id": 3,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": true,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(increase(apache_balancer_requests_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[5m])) by (host, route)",
+          "format": "time_series",
+          "interval": "60s",
+          "intervalFactor": 1,
+          "legendFormat": "{{host}} / {{route}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Requests Served By Node %, 5m",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": "100",
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PS-K8S}",
       "decimals": 2,
       "fill": 1,
       "gridPos": {
-        "h": 7,
+        "h": 5,
         "w": 8,
-        "x": 8,
-        "y": 17
+        "x": 16,
+        "y": 10
       },
       "id": 7,
       "legend": {
@@ -704,24 +1194,36 @@
       "pointradius": 5,
       "points": false,
       "renderer": "flot",
-      "seriesOverrides": [],
+      "seriesOverrides": [
+        {
+          "alias": "/WR/",
+          "transform": "negative-Y"
+        }
+      ],
       "spaceLength": 10,
       "stack": false,
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(apache_balancer_read_bytes_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[10m])) by (host, route)",
+          "expr": "avg(increase(apache_balancer_read_bytes_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[30m])) by (host, route)",
           "format": "time_series",
           "intervalFactor": 1,
-          "legendFormat": "{{host}} / {{route}}",
+          "legendFormat": "RD: {{host}} / {{route}}",
           "refId": "A"
+        },
+        {
+          "expr": "avg(increase(apache_balancer_write_bytes_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[30m])) by (host, route)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "WR: {{host}} / {{route}}",
+          "refId": "B"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Bytes read, 10m",
+      "title": "IO Bytes,  30m Average",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -764,22 +1266,21 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "${DS_PS-K8S}",
-      "decimals": 2,
       "fill": 1,
       "gridPos": {
-        "h": 7,
-        "w": 8,
-        "x": 16,
-        "y": 17
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 15
       },
-      "id": 6,
+      "id": 27,
       "legend": {
         "alignAsTable": true,
         "avg": true,
         "current": true,
         "max": false,
         "min": false,
-        "rightSide": false,
+        "rightSide": true,
         "show": true,
         "sort": "current",
         "sortDesc": true,
@@ -800,10 +1301,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(apache_balancer_write_bytes_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[10m])) by (host, route)",
+          "expr": "histogram_quantile(0.$percentile, sum(increase(apache_endpoint_response_time_seconds_bucket{exporter_name=\"$apache\", method=~\"$method\"}[1m])) by (exported_endpoint,le)) > 0",
           "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{host}} / {{route}}",
+          "interval": "60s",
+          "intervalFactor": 2,
+          "legendFormat": "{{exported_endpoint}}",
           "refId": "A"
         }
       ],
@@ -811,7 +1313,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Bytes written, 10m",
+      "title": "Response Time By Endpoints. $percentile Percentile",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -827,11 +1329,11 @@
       },
       "yaxes": [
         {
-          "format": "decbytes",
+          "format": "s",
           "label": null,
           "logBase": 1,
           "max": null,
-          "min": null,
+          "min": "0",
           "show": true
         },
         {
@@ -847,9 +1349,101 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PS-K8S}",
+      "decimals": 0,
+      "fill": 1,
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 29,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "topk(10,sum(increase(apache_endpoint_response_time_seconds_count{exporter_name=\"$apache\", method=~\"$method\"}[1m])) by (method, exported_endpoint) > 0)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{method}} {{exported_endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Requests By Endpoints, 1m",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "decimals": 0,
+          "format": "none",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "decimals": 0,
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
-  "refresh": false,
+  "refresh": "5m",
   "schemaVersion": 16,
   "style": "dark",
   "tags": [],
@@ -881,14 +1475,14 @@
         "allValue": null,
         "current": {},
         "datasource": "${DS_PS-K8S}",
-        "definition": "label_values(apache_balancer_requests_total,cluster)",
+        "definition": "label_values(apache_balancer_requests_total{exporter_name=\"$apache\"},cluster)",
         "hide": 0,
         "includeAll": false,
         "label": "cluster",
         "multi": false,
         "name": "cluster",
         "options": [],
-        "query": "label_values(apache_balancer_requests_total,cluster)",
+        "query": "label_values(apache_balancer_requests_total{exporter_name=\"$apache\"},cluster)",
         "refresh": 2,
         "regex": "",
         "skipUrlSync": false,
@@ -898,11 +1492,71 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {},
+        "datasource": "${DS_PS-K8S}",
+        "definition": "label_values(apache_endpoint_response_time_seconds_count{exporter_name=\"$apache\"}, method)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "method",
+        "multi": false,
+        "name": "method",
+        "options": [],
+        "query": "label_values(apache_endpoint_response_time_seconds_count{exporter_name=\"$apache\"}, method)",
+        "refresh": 2,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "50",
+          "value": "50"
+        },
+        "hide": 0,
+        "includeAll": false,
+        "label": "percentile",
+        "multi": false,
+        "name": "percentile",
+        "options": [
+          {
+            "selected": true,
+            "text": "50",
+            "value": "50"
+          },
+          {
+            "selected": false,
+            "text": "75",
+            "value": "75"
+          },
+          {
+            "selected": false,
+            "text": "95",
+            "value": "95"
+          },
+          {
+            "selected": false,
+            "text": "99",
+            "value": "99"
+          }
+        ],
+        "query": "50, 75, 95, 99",
+        "skipUrlSync": false,
+        "type": "custom"
       }
     ]
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {
@@ -933,5 +1587,5 @@
   "timezone": "",
   "title": "Prometheus: Apache",
   "uid": "tNCf8TQiz",
-  "version": 13
+  "version": 21
 }
