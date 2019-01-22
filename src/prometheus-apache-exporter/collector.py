@@ -7,7 +7,7 @@ import requests
 import tornado.web
 from lxml import html
 from prometheus_client import generate_latest
-from prometheus_client.core import REGISTRY, GaugeMetricFamily, CounterMetricFamily
+from prometheus_client.core import REGISTRY, GaugeMetricFamily, CounterMetricFamily, HistogramMetricFamily
 
 class MetricHandler(tornado.web.RequestHandler):
     """ Tornado Handler for /metrics endpoint """
@@ -43,6 +43,9 @@ class Collector(object):
         except Exception as e:
             self.logger.error("ENV variable APACHE_EXPORTER_URL is not set. Exception: %s" % e)
 
+        self.url_count = {}
+        self.url_sum = {}      
+
     def generate_latest_scrape(self):
         """ Return a content of Prometheus registry """
         return generate_latest(REGISTRY)
@@ -59,8 +62,8 @@ class Collector(object):
             self.logger.error("Cannot ping Apache status page. Exception: %s" % e)
             return 0
 
-    def str_to_bytes(self,
-                     str):
+    @staticmethod
+    def str_to_bytes(str):
         """ Converts string to bytes """
         str = str.upper()
         res = 0
@@ -83,6 +86,59 @@ class Collector(object):
             return res
 
         return res
+
+    @staticmethod    
+    def sanitize_url(input_url):       
+        if input_url == 'NULL' or input_url == '..reading..' or input_url.find(" ") == -1:
+            return None, None
+
+        # split into method and url       
+        method, tmp = input_url.split(sep=" ", maxsplit=1)        
+        
+        # take first 5 contexts
+        url = ""
+        url_parts = tmp.strip().split(sep="/", maxsplit=6)            
+        for x in url_parts[1:5]:
+            url += "/%s" % x
+
+        # remove dymanic content
+        if url.find('?') >= 0:
+            url = url[0:url.find('?')]
+        if url.find(';') >= 0:
+            url = url[0:url.find(';')]
+        if url.find('/img/') >= 0:
+            url = url[0:url.find('/img/')]        
+        if url.find('/deferredjs/') >= 0:
+            url = url[0:url.find('/deferredjs/')]
+        if url.find(' HTTP') >= 0:
+            url = url[0:url.find(' HTTP')]
+
+
+        return method, url
+
+    def put_histogram_values(self,
+                             method,
+                             url,
+                             duration):
+        buckets = [0.01,0.1,0.25,0.5,1.0,2.5,5.0,10.0,30.0,999999]
+        buckets.sort(reverse=True)
+
+        for b in buckets:
+            bucket_name = str(b).replace('999999','+inf')
+            if duration <= b:
+                if (method, url, bucket_name) not in self.url_count:
+                    self.url_count[method, url, bucket_name] = 1
+                else:
+                    self.url_count[method, url, bucket_name] += 1
+                if (method, url) not in self.url_sum:
+                    self.url_sum[method, url] = duration
+                else:
+                    self.url_sum[method, url] += duration
+            elif duration > b:
+                if (method, url, bucket_name) not in self.url_count:
+                    self.url_count[method, url, bucket_name] = 0
+                if (method, url) not in self.url_sum:
+                    self.url_sum[method, url] = 0
 
     def collect(self):
         """ Scrape /server-status url and collect metrics """      
@@ -114,6 +170,10 @@ class Collector(object):
                                            labels=['cluster', 'host', 'route', 'exporter_name'])
         scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status', 
                                        labels=['status', 'exporter_name'])
+        # Hst_count
+        endpoint_response_time = HistogramMetricFamily('apache_endpoint_response_time_seconds', 'Response time by endpoints', 
+                                                       labels=['method', 'endpoint', 'exporter_name'])
+
         try:
             exporter_name = os.environ['APACHE_EXPORTER_NAME']
         except:
@@ -239,12 +299,50 @@ class Collector(object):
                 balancer_wr.add_metric([cluster,host,route,exporter_name], int(wr))
                 balancer_rd.add_metric([cluster,host,route,exporter_name], int(rd))
 
+        # Get response time by endpoints
+        h = 0
+        for row in root.xpath('/html/body/table[1]/tr'):
+            last_column = len(row)
+            if h == 0:
+                h += 1
+                for h in range(0,last_column):
+                    header = row[h].text.upper()
+                    if header == 'REQ':
+                        req_pos = h
+                    elif header == 'REQUEST':
+                        request_pos = h
+                continue
+            else:
+                try:
+                    duration = float(row[req_pos].text) / 1000
+                    url = ("%s" % row[request_pos].text).strip()
+                    method, url = self.sanitize_url(url)
+                    if method is not None and url is not None:
+                        self.put_histogram_values(method, url, duration)
+                except:
+                    pass
+        
+        # group buckets into one list
+        url_buckets = {}
+        for i in self.url_count:
+            if (i[0],i[1]) not in url_buckets:
+                url_buckets[i[0],i[1]] = [[i[2],self.url_count[i]]]
+            else:
+                url_buckets[i[0],i[1]].append([i[2],self.url_count[i]])
+        
+        for t in url_buckets:
+            if (t[0], t[1]) in self.url_sum:
+                endpoint_response_time.add_metric([t[0], t[1], exporter_name],
+                                                  buckets=url_buckets[t],
+                                                  sum_value=self.url_sum[t[0], t[1]])
+
+        # counters
         yield accesses_total
         yield traffic_total
         yield balancer_acc
         yield balancer_wr
         yield balancer_rd
-
+        # gauges
         yield requests_sec
         yield bytes_sec
         yield bytes_request
@@ -253,3 +351,5 @@ class Collector(object):
         yield route_err
         yield route_unk
         yield scoreboard
+        # histograms
+        yield endpoint_response_time
