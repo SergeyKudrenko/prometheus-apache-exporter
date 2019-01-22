@@ -7,19 +7,22 @@ Exporter scrapes Apache /server-status for worker status and route balancing sta
 * APACHE_EXPORTER_CLUSTERS - Hash (JSON) Clusters and XPath to <TR> element. Example: {"cluster1": "/html/body/table[5]/tr"}
 
 ### Metrics:
-* Counter: apache_accesses_total - Total requests served count since startup
-* Counter: apache_traffic_bytes_total - Total bytes transfered since startup
-* Counter: apache_balancer_requests_total - Total requests count
-* Counter: apache_balancer_write_bytes_total  - Total bytes written
-* Counter: apache_balancer_read_bytes_total  - Total bytes read
-* Gauge: apache_requests_per_second - Requests per second
-* Gauge: apache_io_bytes_per_second - Bytes write/read per second
-* Gauge: apache_io_bytes_per_request - Bytes write/read  per request
-* Gauge: apache_balancer_route_ok  - Balancing status of the route is OK
-* Gauge: apache_balancer_route_disabled - Balancing status of the route is DISABLED
-* Gauge: apache_balancer_route_error - Balancing status of the route is ERROR
-* Gauge: apache_balancer_route_unknown - Balancing status of the route is UNKNOWN
-* Gauge: apache_scoreboard_current - Count of workers grouped by status
+* Counter: **apache_accesses_total** - Total requests served count since startup
+* Counter: **apache_traffic_bytes_total** - Total bytes transfered since startup
+* Counter: **apache_balancer_requests_total** - Total requests count
+* Counter: **apache_balancer_write_bytes_total**  - Total bytes written
+* Counter: **apache_balancer_read_bytes_total**  - Total bytes read
+
+* Gauge: **apache_requests_per_second** - Requests per second
+* Gauge: **apache_io_bytes_per_second** - Bytes write/read per second
+* Gauge: **apache_io_bytes_per_request** - Bytes write/read  per request
+* Gauge: **apache_balancer_route_ok**  - Balancing status of the route is OK
+* Gauge: **apache_balancer_route_disabled** - Balancing status of the route is DISABLED
+* Gauge: **apache_balancer_route_error** - Balancing status of the route is ERROR
+* Gauge: **apache_balancer_route_unknown** - Balancing status of the route is UNKNOWN
+* Gauge: **apache_scoreboard_current** - Count of workers grouped by status
+
+* Histogram: **apache_endpoint_response_time_seconds** - Response time by endpoints
 
 ### Endpoints
 * /healthz/up - liveness probe
