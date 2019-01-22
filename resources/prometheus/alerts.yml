@@ -2,7 +2,7 @@
   rules:
   ### Health ###
   - alert: apache_node_down
-    expr: apache_balancer_route_error==1 or apache_balancer_route_unknown==1
+    expr: apache_balancer_route_error==1
     for: 5m
     labels:
       severity: critical
