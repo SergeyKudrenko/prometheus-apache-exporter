@@ -21,13 +21,15 @@ Exporter scrapes Apache /server-status for worker status and route balancing sta
 * Gauge: **apache_balancer_route_error** - Balancing status of the route is ERROR
 * Gauge: **apache_balancer_route_unknown** - Balancing status of the route is UNKNOWN
 * Gauge: **apache_scoreboard_current** - Count of workers grouped by status
+* Gauge: **apache_operation_duration_seconds** - Internal metric of exporter perfomance
+* Gauge: **apache_latest_scrape_duration_seconds** - Internal metric of scraping speed
 
 * Histogram: **apache_endpoint_response_time_seconds** - Response time by endpoints
 
 ### Endpoints
+* /metrics - apache metrics
 * /healthz/up - liveness probe
 * /healthz/ready - readiness probe
-* /metrics - apache metrics
 
 ### Run
 ```bash
@@ -37,5 +39,6 @@ docker run -it \
 -e APACHE_EXPORTER_NAME='some-host.com' \
 -e APACHE_EXPORTER_URL='https://some-host.com/server-status' \
 -e APACHE_EXPORTER_CLUSTERS='{"cluster1":"/html/body/table[5]/tr"}' \
+-e APACHE_URL_SUBSTRACT_RULES='["?",";","\ HTTP\"]' \
 --name apache-exporter sergeykudrenko/prometheus-apache-exporter:latest
 ```
