@@ -42,6 +42,13 @@ class Collector(object):
             self.url = os.environ['APACHE_EXPORTER_URL']
         except Exception as e:
             self.logger.error("ENV variable APACHE_EXPORTER_URL is not set. Exception: %s" % e)
+            raise SystemExit
+
+        try:           
+            self.url_substract_rules = json.loads(os.environ['APACHE_URL_SUBSTRACT_RULES'])
+        except Exception as e:
+            self.logger.warn("Could not get ENV variable APACHE_URL_SUBSTRACT_RULES. Exception %s" % e)
+            self.logger.warn("APACHE_URL_SUBSTRACT_RULES value: %s" % os.environ['APACHE_URL_SUBSTRACT_RULES'])
 
         self.url_count = {}
         self.url_sum = {}      
@@ -87,32 +94,27 @@ class Collector(object):
 
         return res
 
-    @staticmethod    
-    def sanitize_url(input_url):       
+    def sanitize_url(self,
+                     input_url):       
         if input_url == 'NULL' or input_url == '..reading..' or input_url.find(" ") == -1:
+            return None, None
+        if self.url_substract_rules is None:
             return None, None
 
         # split into method and url       
-        method, tmp = input_url.split(sep=" ", maxsplit=1)        
+        method, tmp = input_url.split(sep=" ", maxsplit=1)                
         
         # take first 5 contexts
         url = ""
         url_parts = tmp.strip().split(sep="/", maxsplit=6)            
         for x in url_parts[1:5]:
             url += "/%s" % x
-
+        
         # remove dymanic content
-        if url.find('?') >= 0:
-            url = url[0:url.find('?')]
-        if url.find(';') >= 0:
-            url = url[0:url.find(';')]
-        if url.find('/img/') >= 0:
-            url = url[0:url.find('/img/')]        
-        if url.find('/deferredjs/') >= 0:
-            url = url[0:url.find('/deferredjs/')]
-        if url.find(' HTTP') >= 0:
-            url = url[0:url.find(' HTTP')]
-
+        for rule in self.url_substract_rules:
+            pos = url.find(rule)            
+            if pos >= 0:
+                url = url[0:pos+len(rule)]
 
         return method, url
 
@@ -168,9 +170,14 @@ class Collector(object):
                                       labels=['cluster', 'host', 'route', 'exporter_name'])
         route_unk = GaugeMetricFamily('apache_balancer_route_unknown', 'Balancing status of the route is UNKNOWN', 
                                            labels=['cluster', 'host', 'route', 'exporter_name'])
-        scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status', 
+        scoreboard = GaugeMetricFamily('apache_scoreboard_current', 'Count of workers grouped by status',
                                        labels=['status', 'exporter_name'])
-        # Hst_count
+        latest_scrape = GaugeMetricFamily('apache_latest_scrape_duration_seconds','Latest scrape duration in seconds',
+                                          labels=['metric_name','exporter_name'])
+        operation_duration = GaugeMetricFamily('apache_operation_duration_seconds','Operation duration in seconds',
+                                               labels=['operation','exporter_name'])
+
+        # Histograms
         endpoint_response_time = HistogramMetricFamily('apache_endpoint_response_time_seconds', 'Response time by endpoints', 
                                                        labels=['method', 'endpoint', 'exporter_name'])
 
@@ -179,18 +186,25 @@ class Collector(object):
         except:
             exporter_name = 'none'
 
+        start = time.clock()
         try:
             page = requests.get(self.url, verify=False)
             page.raise_for_status()
         except Exception as e:
             self.logger.error("Cannot load Apache status page. Exception: %s" % e)            
-        
+        duration = float("%.3g" % (time.clock()-start))
+        operation_duration.add_metric(['load_page',exporter_name], duration)
+
+        start = time.clock()
         try:
             root = html.fromstring(page.content)
         except Exception as e:
             self.logger.error("Cannot parse status page as html. Exception: %s" % e)                        
+        duration = float("%.3g" % (time.clock()-start))
+        operation_duration.add_metric(['parse_page',exporter_name], duration)
 
         # Find total traffic and accesses, and requests,bytes per second/request
+        start = time.clock()
         for x in range(1, 20):
             tmp_str = root.xpath("/html/body/dl[2]/dt[%d]" % x)[0].text.strip()
             if tmp_str.find('Total accesses:') >=0:
@@ -203,7 +217,11 @@ class Collector(object):
                 if _traffic_total is not None:
                     traffic_total.add_metric([exporter_name], _traffic_total)
                 break
-        
+        duration = float("%.3g" % (time.clock()-start))
+        latest_scrape.add_metric(['apache_accesses_total',exporter_name], duration)
+        latest_scrape.add_metric(['apache_traffic_bytes_total',exporter_name], duration)
+
+        start = time.clock()
         for x in range(1, 20):
             tmp_str = root.xpath("/html/body/dl[2]/dt[%d]" % x)[0].text.strip()
             if tmp_str.find('requests') >=0 and tmp_str.find('second') >=0:
@@ -219,8 +237,13 @@ class Collector(object):
                 if _bytes_request is not None:
                     bytes_request.add_metric([exporter_name], _bytes_request)
                 break
+        duration = float("%.3g" % (time.clock()-start))
+        latest_scrape.add_metric(['apache_requests_per_second',exporter_name], duration)
+        latest_scrape.add_metric(['apache_io_bytes_per_second',exporter_name], duration)
+        latest_scrape.add_metric(['apache_io_bytes_per_request',exporter_name], duration)                
 
         # Get workers statuses
+        start = time.clock()
         workers_map = {}
         workers = root.xpath('/html/body/pre')[0].text.strip()
         for symbol in range (0,len(workers)):
@@ -257,8 +280,11 @@ class Collector(object):
             if worker_status != "\n":
                 #Update workers scoreboard
                 scoreboard.add_metric([status, exporter_name], int(workers_map[worker_status]))
+        duration = float("%.3g" % (time.clock()-start))
+        latest_scrape.add_metric(['apache_scoreboard_current',exporter_name], duration)
 
         # Get balancing and routes status
+        start = time.clock()        
         try:
             cluster_xpaths = json.loads(os.environ['APACHE_EXPORTER_CLUSTERS'])
         except Exception as e:
@@ -298,8 +324,17 @@ class Collector(object):
                 balancer_acc.add_metric([cluster,host,route,exporter_name], int(acc))
                 balancer_wr.add_metric([cluster,host,route,exporter_name], int(wr))
                 balancer_rd.add_metric([cluster,host,route,exporter_name], int(rd))
+        duration = float("%.3g" % (time.clock()-start))
+        latest_scrape.add_metric(['apache_balancer_route_ok',exporter_name], duration)
+        latest_scrape.add_metric(['apache_balancer_route_disabled',exporter_name], duration)
+        latest_scrape.add_metric(['apache_balancer_route_error',exporter_name], duration)
+        latest_scrape.add_metric(['apache_balancer_route_unknown',exporter_name], duration)
+        latest_scrape.add_metric(['apache_balancer_requests_total',exporter_name], duration)
+        latest_scrape.add_metric(['apache_balancer_write_bytes_total',exporter_name], duration)
+        latest_scrape.add_metric(['apache_balancer_read_bytes_total',exporter_name], duration)                                                
 
         # Get response time by endpoints
+        start = time.clock()        
         h = 0
         for row in root.xpath('/html/body/table[1]/tr'):
             last_column = len(row)
@@ -335,6 +370,8 @@ class Collector(object):
                 endpoint_response_time.add_metric([t[0], t[1], exporter_name],
                                                   buckets=url_buckets[t],
                                                   sum_value=self.url_sum[t[0], t[1]])
+        duration = float("%.3g" % (time.clock()-start))
+        latest_scrape.add_metric(['apache_endpoint_response_time_seconds',exporter_name], duration)
 
         # counters
         yield accesses_total
@@ -351,5 +388,7 @@ class Collector(object):
         yield route_err
         yield route_unk
         yield scoreboard
+        yield latest_scrape
+        yield operation_duration
         # histograms
         yield endpoint_response_time
