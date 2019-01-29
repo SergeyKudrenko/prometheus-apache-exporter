@@ -58,7 +58,7 @@
   "gnetId": null,
   "graphTooltip": 0,
   "id": null,
-  "iteration": 1548133790574,
+  "iteration": 1548748243951,
   "links": [],
   "panels": [
     {
@@ -588,7 +588,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "apache_balancer_route_ok{exporter_name=\"$apache\", cluster=\"$cluster\"}",
+          "expr": "avg(apache_balancer_route_ok{exporter_name=\"$apache\", cluster=\"$cluster\"}) by (exporter_name, route)",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -681,7 +681,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "apache_balancer_route_disabled{exporter_name=\"$apache\", cluster=\"$cluster\"}",
+          "expr": "avg(apache_balancer_route_disabled{exporter_name=\"$apache\", cluster=\"$cluster\"}) by (exporter_name, route)",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -774,7 +774,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "apache_balancer_route_error{exporter_name=\"$apache\", cluster=\"$cluster\"}",
+          "expr": "avg(apache_balancer_route_error{exporter_name=\"$apache\", cluster=\"$cluster\"}) by (exporter_name, route)",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -880,6 +880,95 @@
         "x": 8,
         "y": 5
       },
+      "id": 2,
+      "legend": {
+        "alignAsTable": true,
+        "avg": false,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sort": "current",
+        "sortDesc": true,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null as zero",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "sum(increase(apache_balancer_requests_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[1m])) by (host, route)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{host}} / {{route}}",
+          "refId": "A"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Requests Served By Node, 1m",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PS-K8S}",
+      "fill": 1,
+      "gridPos": {
+        "h": 5,
+        "w": 8,
+        "x": 16,
+        "y": 5
+      },
       "id": 19,
       "legend": {
         "alignAsTable": true,
@@ -944,7 +1033,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Workers By Status",
+      "title": "Apache Workers By Status",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -965,95 +1054,6 @@
           "logBase": 1,
           "max": "100",
           "min": "0",
-          "show": true
-        },
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
-          "show": true
-        }
-      ],
-      "yaxis": {
-        "align": false,
-        "alignLevel": null
-      }
-    },
-    {
-      "aliasColors": {},
-      "bars": false,
-      "dashLength": 10,
-      "dashes": false,
-      "datasource": "${DS_PS-K8S}",
-      "fill": 1,
-      "gridPos": {
-        "h": 5,
-        "w": 8,
-        "x": 16,
-        "y": 5
-      },
-      "id": 2,
-      "legend": {
-        "alignAsTable": true,
-        "avg": false,
-        "current": true,
-        "max": false,
-        "min": false,
-        "rightSide": false,
-        "show": true,
-        "sort": "current",
-        "sortDesc": true,
-        "total": false,
-        "values": true
-      },
-      "lines": true,
-      "linewidth": 1,
-      "links": [],
-      "nullPointMode": "null as zero",
-      "percentage": false,
-      "pointradius": 5,
-      "points": false,
-      "renderer": "flot",
-      "seriesOverrides": [],
-      "spaceLength": 10,
-      "stack": false,
-      "steppedLine": false,
-      "targets": [
-        {
-          "expr": "sum(increase(apache_balancer_requests_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[1m])) by (host, route)",
-          "format": "time_series",
-          "intervalFactor": 1,
-          "legendFormat": "{{host}} / {{route}}",
-          "refId": "A"
-        }
-      ],
-      "thresholds": [],
-      "timeFrom": null,
-      "timeRegions": [],
-      "timeShift": null,
-      "title": "Requests, 1m",
-      "tooltip": {
-        "shared": true,
-        "sort": 2,
-        "value_type": "individual"
-      },
-      "type": "graph",
-      "xaxis": {
-        "buckets": null,
-        "mode": "time",
-        "name": null,
-        "show": true,
-        "values": []
-      },
-      "yaxes": [
-        {
-          "format": "short",
-          "label": null,
-          "logBase": 1,
-          "max": null,
-          "min": null,
           "show": true
         },
         {
@@ -1109,7 +1109,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(apache_balancer_requests_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[5m])) by (host, route)",
+          "expr": "sum(increase(apache_balancer_requests_total{exporter_name=\"$apache\", cluster=\"$cluster\"}[1m])) by (host, route)",
           "format": "time_series",
           "interval": "60s",
           "intervalFactor": 1,
@@ -1121,7 +1121,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Requests Served By Node %, 5m",
+      "title": "Requests Served By Node %, 1m",
       "tooltip": {
         "shared": true,
         "sort": 2,
@@ -1175,11 +1175,11 @@
       "id": 7,
       "legend": {
         "alignAsTable": true,
-        "avg": true,
+        "avg": false,
         "current": true,
         "max": false,
         "min": false,
-        "rightSide": false,
+        "rightSide": true,
         "show": true,
         "sort": "current",
         "sortDesc": true,
@@ -1223,7 +1223,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "IO Bytes,  30m Average",
+      "title": "IO Bytes By Node,  30m Average",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1282,8 +1282,9 @@
         "min": false,
         "rightSide": true,
         "show": true,
-        "sort": "current",
-        "sortDesc": true,
+        "sideWidth": null,
+        "sort": null,
+        "sortDesc": null,
         "total": false,
         "values": true
       },
@@ -1301,11 +1302,11 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "histogram_quantile(0.$percentile, sum(increase(apache_endpoint_response_time_seconds_bucket{exporter_name=\"$apache\", method=~\"$method\"}[1m])) by (exported_endpoint,le)) > 0",
+          "expr": "histogram_quantile(0.$percentile, apache:http_request:increase{exporter_name=\"$apache\", method=~\"$method\"}) > 0",
           "format": "time_series",
           "interval": "60s",
           "intervalFactor": 2,
-          "legendFormat": "{{exported_endpoint}}",
+          "legendFormat": "{{method}} {{exported_endpoint}}",
           "refId": "A"
         }
       ],
@@ -1316,7 +1317,7 @@
       "title": "Response Time By Endpoints. $percentile Percentile",
       "tooltip": {
         "shared": true,
-        "sort": 0,
+        "sort": 2,
         "value_type": "individual"
       },
       "type": "graph",
@@ -1392,8 +1393,9 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "topk(10,sum(increase(apache_endpoint_response_time_seconds_count{exporter_name=\"$apache\", method=~\"$method\"}[1m])) by (method, exported_endpoint) > 0)",
+          "expr": "apache:http_request:increase{exporter_name=\"$apache\", method=~\"$method\", le=\"+inf\"}>0",
           "format": "time_series",
+          "instant": false,
           "intervalFactor": 1,
           "legendFormat": "{{method}} {{exported_endpoint}}",
           "refId": "A"
@@ -1403,7 +1405,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Requests By Endpoints, 1m",
+      "title": "Requests By Endpoints, 5m",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -1441,12 +1443,121 @@
         "align": false,
         "alignLevel": null
       }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "${DS_PS-K8S}",
+      "fill": 1,
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 30,
+      "legend": {
+        "alignAsTable": true,
+        "avg": true,
+        "current": true,
+        "max": false,
+        "min": false,
+        "rightSide": true,
+        "show": true,
+        "sideWidth": null,
+        "sort": null,
+        "sortDesc": null,
+        "total": false,
+        "values": true
+      },
+      "lines": true,
+      "linewidth": 1,
+      "links": [],
+      "nullPointMode": "null",
+      "percentage": false,
+      "pointradius": 5,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [
+        {
+          "alias": "Operation: load_page",
+          "color": "#7eb26d"
+        },
+        {
+          "alias": "Operation: parse_page",
+          "color": "#70dbed"
+        }
+      ],
+      "spaceLength": 10,
+      "stack": true,
+      "steppedLine": false,
+      "targets": [
+        {
+          "expr": "avg(apache_operation_duration_seconds{exporter_name=\"$apache\"}) by (exporter_name, operation)",
+          "format": "time_series",
+          "interval": "60s",
+          "intervalFactor": 2,
+          "legendFormat": "Operation: {{operation}}",
+          "refId": "A"
+        },
+        {
+          "expr": "avg(apache_latest_scrape_duration_seconds{exporter_name=\"$apache\"}) by (exporter_name, metric_name)",
+          "format": "time_series",
+          "intervalFactor": 1,
+          "legendFormat": "{{metric_name}}",
+          "refId": "B"
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "Last Scrape",
+      "tooltip": {
+        "shared": true,
+        "sort": 2,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "s",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": "0",
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
     }
   ],
   "refresh": "5m",
   "schemaVersion": 16,
   "style": "dark",
-  "tags": [],
+  "tags": [
+    "overview"
+  ],
   "templating": {
     "list": [
       {
@@ -1556,7 +1667,7 @@
     ]
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {
@@ -1587,5 +1698,5 @@
   "timezone": "",
   "title": "Prometheus: Apache",
   "uid": "tNCf8TQiz",
-  "version": 21
+  "version": 29
 }
