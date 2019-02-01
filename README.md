@@ -5,6 +5,7 @@ Exporter scrapes Apache /server-status for worker status and route balancing sta
 * APACHE_EXPORTER_NAME - Fully qualified name to distinguish apache instance in metrics
 * APACHE_EXPORTER_URL - Apache /server-status url. Example: "https://some-host.com/server-status"
 * APACHE_EXPORTER_CLUSTERS - Hash (JSON) Clusters and XPath to <TR> element. Example: {"cluster1": "/html/body/table[5]/tr"}
+* APACHE_URL_SUBSTRACT_RULES - a set of substrings followed by dynamic content. Used to cutoff URL parameters and etc
 
 ### Metrics:
 * Counter: **apache_accesses_total** - Total requests served count since startup
@@ -39,6 +40,6 @@ docker run -it \
 -e APACHE_EXPORTER_NAME='some-host.com' \
 -e APACHE_EXPORTER_URL='https://some-host.com/server-status' \
 -e APACHE_EXPORTER_CLUSTERS='{"cluster1":"/html/body/table[5]/tr"}' \
--e APACHE_URL_SUBSTRACT_RULES='["?",";","\ HTTP\"]' \
+-e APACHE_URL_SUBSTRACT_RULES='["?",";"," HTTP", "/img/"]' \
 --name apache-exporter sergeykudrenko/prometheus-apache-exporter:latest
 ```
