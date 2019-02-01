@@ -1,5 +1,6 @@
 ### Apache exporter 
-Exporter scrapes Apache /server-status for worker status and route balancing statistics
+Exporter scrapes Apache /server-status for worker status and route balancing statistics.
+Grafana Dashboards and Prometheus alerts are included.
  
 ### Exporter is configured via environment variables:
 * APACHE_EXPORTER_NAME - Fully qualified name to distinguish apache instance in metrics
@@ -43,3 +44,4 @@ docker run -it \
 -e APACHE_URL_SUBSTRACT_RULES='["?",";"," HTTP", "/img/"]' \
 --name apache-exporter sergeykudrenko/prometheus-apache-exporter:latest
 ```
+![Alt text](resources/grafana/dashboard_example.png?raw=true "Grafana Dashboard")
